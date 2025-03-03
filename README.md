@@ -1,4 +1,4 @@
-# [chriscarl.com](chriscarl.com)
+# [chriscarl.com](http://chriscarl.com)
 Incredibly simple website that just gets the point across, but it DOES look cool.
 
 **NOTE:** the original angular implementation is tucked away in tag `refs/tags/2018-angular`.
