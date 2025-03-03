@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* body {
+            background-color: black
+        } */
+    </style>
+</head>
+<body>
+    <p id="progress"></p>
+    <script>
+        console.log('loading')
+        domprogress = document.getElementById("progress")
+        domprogress.textContent = 'loading'
+    </script>
+    <!-- <img id="canvas" width="742" height="1449" alt="canvas"></img> -->
+    <svg id="canvas" width="742" height="1449" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2968 5797"></svg>
+    <script src="./assets/adobe-illustrator-try.js"></script>
+    <script>
+        // clearly something is wrong with the logic since theres a bald patch, lol, but the overall idea is there.
+        domprogress = document.getElementById("progress")
+        const svgns = "http://www.w3.org/2000/svg";
+        svg = document.getElementById("canvas")
+        counter = 0
+        draws = 1
+        domprogress.textContent = `${counter / paths.length * 100} % - counter ${counter}`
+        intervalId = setInterval(() => {
+            if (counter >= paths.length) {
+                return
+            }
+            for (const subpath of paths.splice(counter, counter + draws)) {
+                let svgpath = document.createElementNS(svgns, "path");
+                for (const [key, value] of Object.entries(subpath)) {
+                    svgpath.setAttribute(key, value)
+                }
+                svg.appendChild(svgpath)
+            }
+            counter += draws
+            domprogress.textContent = `${counter / paths.length * 100} % - counter ${counter}`
+        }, 1);
+
+        console.log('loaded')
+        domprogress = document.getElementById("progress")
+        domprogress.textContent = 'loaded'
+    </script>
+</body>
+</html>
