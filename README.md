@@ -39,7 +39,15 @@ To be clear, this is where things get dangerous, tricky, and unclear. I do not c
     6. add `chriscarl.com` config to `sites-enabled`
     7. now watch as the probes and attacks come flooding in...
 - on laptop, test `http://chriscarl.com` and `https://chriscarl.com`, and the HTTPS should give you that usual "attacker" bullshit. you can check the certificate itself to see what's written and you'll see its exactly what you put in there.
-- on vm, clone this repository w/ ``
+- on vm
+```bash
+git clone git@github.com:chrisbcarl/chriscarl.com.git
+sudo mv chriscarl.com/ /var/www/html/
+```
+- request SSL, you have to BUY from somebody, I went with [Comodo Positive SSL Product](https://comodosslstore.com/positivessl.aspx)
+    - they asked for basic identifying information
+    - i had to generate a CSR, consult `generating the CSR for a CA cert` in `setup.sh`, or [this link for a guide](https://help.comodosslstore.com/support/solutions/articles/22000218709--apache-openssl)
+    - to verify, I had to copy something from THEIR side onto my side, see `HTTP verification method` in `setup.sh`
 
 
 

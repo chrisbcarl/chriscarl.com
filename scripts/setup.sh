@@ -13,7 +13,7 @@ sudo apt install net-tools nginx nmap netfilter-persistent tree -y -y
 ssh-keygen
 cat ~/.ssh/id_ed25519.pub  # add this to github
 ssh-add -i ~/.ssh/id_ed25519
-chmod -R 0600 ~/.ssh  # # correct the permissions of your ssh keys, should be access only to yourself.
+sudo chmod -R 700 ~/.ssh  # # correct the permissions of your ssh keys, should be access only to yourself.
 ll ~/.ssh  # THIS DOESNT WORK ANYMORE
 sudo ls -lah ~/.ssh  # this does
 eval "$(ssh-agent -s)"
@@ -62,3 +62,23 @@ mkdir ~/src
 cd ~/src
 git clone git@github.com:chrisbcarl/chriscarl.com.git
 sudo mv chriscarl.com/ /var/www/html/
+
+
+# generating the CSR for a CA cert
+mkdir ~/.cert
+openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr
+mv PRIVATEKEY.key ~/.cert/
+mv MYCSR.csr ~/.cert/
+sudo chmod -R 600 ~/.cert
+cat ~/.cert/MYCSR.csr
+
+# HTTP verification method:
+
+cd /var/www/html
+mkdir -p .well-known/pki-validation
+vim FD58D700E947CCCB51998327A517749B.txt
+# F287004065E8AE286C4C4BAFB2CD82D13D13321E9E9438C3A59E595735868DB9
+# sectigo.com
+# gtsrf55exb5qbcjbx55l
+
+curl -k https://chriscarl.com/.well-known/pki-validation/FD58D700E947CCCB51998327A517749B.txt
