@@ -53,10 +53,6 @@ sudo systemctl status nginx
 curl -k https://$(hostname -i)  # ignore ssl safe
 
 
-# now watch as the probes and attacks come flooding in...
-tail -f /var/log/nginx/access.log
-
-
 # clone the respository in one of your own folders (since ssh demands it)
 mkdir ~/src
 cd ~/src
@@ -64,21 +60,21 @@ git clone git@github.com:chrisbcarl/chriscarl.com.git
 sudo mv chriscarl.com/ /var/www/html/
 
 
-# generating the CSR for a CA cert
-mkdir ~/.cert
-openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr
-mv PRIVATEKEY.key ~/.cert/
-mv MYCSR.csr ~/.cert/
-sudo chmod -R 600 ~/.cert
-cat ~/.cert/MYCSR.csr
+# SSL
+sudo apt remove certbot -y  # install certbot
+sudo apt update -y
+sudo apt install snapd -y
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot  # put it on the path with a shortcut
+which certbot
+# sudo certbot --nginx  # self modify the nginx conf
+sudo certbot certonly --nginx  # generate certs to disk
+sudo ls -lah /etc/letsencrypt/live/chriscarl.com
+sudo certbot renew --dry-run  # setup renewal
+systemctl list-timers --all  # list out all cron jobs
+sudo vim /etc/nginx/sites-enabled/chriscarl.com  # edit and use cert.pem and privkey.pem
+sudo systemctl restart nginx
 
-# HTTP verification method:
 
-cd /var/www/html
-mkdir -p .well-known/pki-validation
-vim FD58D700E947CCCB51998327A517749B.txt
-# F287004065E8AE286C4C4BAFB2CD82D13D13321E9E9438C3A59E595735868DB9
-# sectigo.com
-# gtsrf55exb5qbcjbx55l
-
-curl -k https://chriscarl.com/.well-known/pki-validation/FD58D700E947CCCB51998327A517749B.txt
+# now watch as the probes and attacks come flooding in...
+tail -f /var/log/nginx/access.log

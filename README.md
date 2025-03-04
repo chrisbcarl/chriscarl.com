@@ -12,6 +12,15 @@ Incredibly simple website that just gets the point across, but it DOES look cool
 - play back the paths one by one by appending a new element to an svg canvas in the [index.html](./src/index.html). Its that stupid.
 
 
+# "Powered by"
+- [Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/) - for a VM, no cloud abstractions, any injury is self-inflicted
+- [nginx](https://nginx.org/) - webserver, goated
+- [Bootstrap](https://getbootstrap.com/) - css styling, i know its overused/lame/whatever
+- [FontAwesome](https://getbootstrap.com/) - I actually steal the SVG's directly
+- [letsencrypt.org](https://letsencrypt.org) - SSL w/ `certbot` via `Lets Encrypt CA`
+- [Matt](mailto:Mgz1619@gmail.com) - original sketch done in 2018
+
+
 # Deployment
 To be clear, this is where things get dangerous, tricky, and unclear. I do not claim to hold all of the correct answers, but here's what I've done to date to get this website deployed.
 - on laptop
@@ -44,12 +53,29 @@ To be clear, this is where things get dangerous, tricky, and unclear. I do not c
 git clone git@github.com:chrisbcarl/chriscarl.com.git
 sudo mv chriscarl.com/ /var/www/html/
 ```
-- request SSL, you have to BUY from somebody, I went with [Comodo Positive SSL Product](https://comodosslstore.com/positivessl.aspx)
-    - they asked for basic identifying information
-    - i had to generate a CSR, consult `generating the CSR for a CA cert` in `setup.sh`, or [this link for a guide](https://help.comodosslstore.com/support/solutions/articles/22000218709--apache-openssl)
-    - to verify, I had to copy something from THEIR side onto my side, see `HTTP verification method` in `setup.sh`
+- ssl, use [letsencrypt.org](https://letsencrypt.org)
+    -
+
+# HTTPS Deployment
+- letsencrypt is a Certificate Authority just like Comodo, DigiCert, etc, but maintained by donations, does not offer OU validation, etc. For single websites, this is perfect.
+- consult `SSL` in `setup.sh`
 
 
+# Other Good Articles
+- https://www.godaddy.com/help/edit-an-a-record-19239
+- https://docs.oracle.com/en/learn/ol-nginx/#enable-and-start-the-nginx-service
+- https://linuxconfig.org/how-to-install-nginx-on-linux
+- https://linuxnightly.com/allow-port-through-firewall-in-ubuntu/
+- https://serverfault.com/questions/985895/how-to-setup-nginx-apache-on-oracle-cloud-instance
+- https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+- https://docs.oracle.com/en/learn/ol-nginx/#update-the-firewall
+- https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/apache-on-ubuntu/01oci-ubuntu-apache-summary.htm
+- https://medium.com/@union_io/swapping-fill-color-on-image-tag-svgs-using-css-filters-fa4818bf7ec6
+- https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux
+- https://www.tecmint.com/set-ssh-directory-permissions-in-linux/
+- https://letsencrypt.org/how-it-works/
+- https://certbot.eff.org/instructions?ws=nginx&os=snap
+- https://www.feistyduck.com/books/bulletproof-tls-and-pki/
 
 
 # Credits
