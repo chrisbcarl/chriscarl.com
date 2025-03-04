@@ -54,11 +54,8 @@ git clone git@github.com:chrisbcarl/chriscarl.com.git
 sudo mv chriscarl.com/ /var/www/html/
 ```
 - ssl, use [letsencrypt.org](https://letsencrypt.org)
-    -
-
-# HTTPS Deployment
-- letsencrypt is a Certificate Authority just like Comodo, DigiCert, etc, but maintained by donations, does not offer OU validation, etc. For single websites, this is perfect.
-- consult `SSL` in `setup.sh`
+    - letsencrypt is a Certificate Authority just like Comodo, DigiCert, etc, but maintained by donations, does not offer OU validation, etc. For single websites, this is perfect.
+    - consult `SSL` in `setup.sh`
 
 
 # Other Good Articles
