@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "chriscarl-com"
+version = "0.0.0"
+description = "Incredibly simple website that just gets the point across, but it DOES look cool."
+authors = ["Chris Carl <chrisbcarl@outlook.com>"]
+license = "MIT"
+readme = "README.md"
+packages = []  # {include = "chriscarl"}
+
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+pandas = "^2.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

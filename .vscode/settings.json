@@ -1,0 +1,22 @@
+{
+    "editor.wordWrap": "off",
+    "debug.inlineValues": "off",  // truly awful otherwise
+    "search.exclude": {
+        "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
+        "**/*.venv*": true,
+    },
+    "files.exclude": {
+        "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
+        "**/*.venv*": true,
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\scripts\\python.exe",
+    "[python]": {
+        "editor.defaultFormatter": "eeyore.yapf",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "editor.formatOnType": false
+    },
+    "markdown.preview.fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif",  // consolas
+    // jupyter
+    "jupyter.widgetScriptSources": ["jsdelivr.com", "unpkg.com"],  // FEATURE: ipynb-matplotlib-widgets
+}
