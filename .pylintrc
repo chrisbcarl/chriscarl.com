@@ -1,0 +1,53 @@
+[MASTER]
+jobs=4
+ignore-patterns =
+    **/tests/**
+    **/ignoreme/**
+
+# NE: NEVER ELIMINATE
+#   The following are exceptions that we have to the Python Coding Standard
+#   We most likely will never remove these warning disables
+# PNE: PROBABLY NEVER ELIMINATE
+#   The following are exceptions that will help code quality, but are
+#   probably too much work to actually eliminate and have any benefit
+# SE: SHOULD ELIMINATE
+#   The following are exceptions that we should hope to eliminate
+#   For now, they are disabled because there are a lot of them and it
+#   masks other errors
+# 3E: PYTHON 3 ELIMINATE
+#   Warnings that can be re-enabled when code is switched to Python3 only
+#   Some messages are only relevant for Python2 or Python3 but not both.
+# PMH: PYLINT MESSAGE HIDING
+#   The following pertain to the information that pylint generates
+#   These can be added or removed to show potential improvements in code quality
+[MESSAGES CONTROL]
+disable =
+    no-else-return,               # PNE: Don't necessarily like the recommended syntax here
+    no-else-break,                # PNE: Don't necessarily like the recommended syntax here
+    no-else-raise,                # PNE: Don't necessarily like the recommended syntax here
+    line-too-long,                # SE:  Our line length is 120, but not strictly enforced
+    bad-continuation,             # SE:  I cannot figure out how to adhere to this in a couple places (may be broken), so ignoring for now
+    missing-docstring,            # SE:  Our goal is to document everything, but for now this prints to many messages to be useful
+    len-as-condition,             # SE:  Can add back if or once https://github.com/PyCQA/pylint/issues/2684 is resolved
+    broad-except,                 # SE:  We may want to work on narrowing exceptions that are caught (not just catch Exception)
+    too-few-public-methods,       # SE:  Local disable only
+    too-many-arguments,           # SE:  Local disable only
+    too-many-branches,            # SE:  Local disable only
+    too-many-locals,              # SE:  Local disable only
+    too-many-instance-attributes, # SE:  Local disable only
+    too-many-public-methods,      # SE:  Local disable only
+    too-many-return-statements,   # SE:  Local disable only
+    too-many-statements,          # SE:  Local disable only
+    raise-missing-from,           # 3E:  Needed for Python2
+    super-with-arguments,         # 3E:  Needed for Python2
+    useless-object-inheritance,   # 3E:  Needed for Python2
+    duplicate-code,               # PMH: We have no limit of line size
+    consider-using-with,          # NE:  dangling opens which are never explicitly closed are actually used a lot
+    unspecified-encoding,         # NE:  encoding isnt a problem for us
+    consider-using-f-string       # NE:  can't since py2
+
+[BASIC]
+good-names=_,i,j,k,m,ex,fd,id,mb,ns,log,e
+
+[FORMAT]
+max-line-length=180

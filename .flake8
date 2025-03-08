@@ -1,0 +1,7 @@
+[flake8]
+; E226,E302,E41 ???
+; F401 - too long
+; W503/W504 line break after binary operator which means that a binary operation like & or | happens and then has a newline after, looks janky, but common in overly long one-line formulas.
+ignore = F401, W503, W504
+max-line-length = 180
+exclude = tests/*
