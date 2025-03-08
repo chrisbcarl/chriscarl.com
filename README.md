@@ -58,6 +58,12 @@ sudo mv chriscarl.com/ /var/www/html/
     - consult `SSL` in `setup.sh`
 
 
+# Maintenance
+- `scripts/push.ps1`: push files up to the vm, probably a good candidate for a CD action
+- `scripts/pull-logs.ps1`: pull logs down for analysis
+- `scripts/parse-logs.py`: from the `access.log` and `auth.log` files, spit out some csv's / dfs
+
+
 # Other Good Articles
 - https://www.godaddy.com/help/edit-an-a-record-19239
 - https://docs.oracle.com/en/learn/ol-nginx/#enable-and-start-the-nginx-service
