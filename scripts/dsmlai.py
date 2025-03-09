@@ -157,12 +157,12 @@ for i in range(iterations):
     with session.post(uri, headers=IP_API_HEADERS, json=subips) as resp:
         if resp.status_code != 200:
             print('bad status code:', resp.status_code, 'reason:', resp.reason, 'sleeping 30')
-            time.sleep(30)
+            time.sleep(15)
             continue
         body = resp.json()
         ip_dicts.extend(body)
     print('sleeping 5')
-    time.sleep(5)
+    time.sleep(1)
 
 ip_api_df = pd.DataFrame(ip_dicts)
 ip_api_df.to_csv(IP_API_CSV, index=False)
@@ -283,7 +283,7 @@ for group, subdf in everything_df.groupby(['remote_addr']):
         if len(next_3_seconds) > 4:
             # print(set(next_3_seconds['route']), known_routes)
             if set(next_3_seconds['route']).issuperset(known_routes):
-                print('human at', remote_addr)
+                # print('human at', remote_addr)
                 everything_df.loc[next_3_seconds.index, ['probably_human']] = True
 
 everything_df[everything_df['remote_addr'] == '73.93.77.135']
@@ -326,15 +326,39 @@ def top_agents(long_agent):
     return '???'
 
 
+import math
+
 EVERYTHING_BETTER_CSV = os.path.join(IGNOREME_DIRPATH, 'everything-no-agents.csv')
 everything_better_df = everything_df.copy()
+everything_better_df['route_degree'] = everything_better_df['route_length'].apply(lambda x: math.ceil(math.log(x, 2)))
 everything_better_df['time_local'] = pd.to_datetime(everything_better_df['time_local'])
 everything_better_df['user_agent'] = everything_better_df['http_user_agent'].apply(top_agents)
 everything_better_df['time_local'] = everything_better_df['time_local'].astype(np.int64) // 10**9
 everything_better_df['verb'] = everything_better_df['verb'].apply(lambda x: x if x in KNOWN_VERBS else '???')
-everything_better_df['route'] = everything_better_df['route'].apply(lambda x: x if x in known_routes else '???')
+# everything_better_df['route'] = everything_better_df['route'].apply(lambda x: x if x in known_routes else '???')
 # everything_better_df[['route_0', 'route_1', 'route_2', 'route_3']] = everything_better_df['route'].str.split('/', n=3, expand=True)
-everything_better_df = everything_better_df.drop(['remote_user', 'http_user_agent', 'countryCode', 'region', 'city', 'zip', 'lat', 'lon', 'timezone', 'isp', 'org', 'as'], axis=1)
+everything_better_df = everything_better_df.drop(
+    [
+        'remote_addr',  # ironically, ip address is NOT what we're interested in, because otherwise, the model wou
+        'remote_user',  # definitely unnecessary
+        'time_local',  # how can this be part of what we're interested in? now that we've used it to identify humans, we're done
+        'route',  # there may actually be too many routes so when it gets one hotted it goes nuts
+        'route_length',  # same here
+        'http_user_agent',  # way too entropic, replaced with user_agent
+        'countryCode',  # country name better
+        'region',  # region name better
+        # wayyy too granular
+        'city',
+        'zip',
+        'lat',
+        'lon',
+        'timezone',
+        'isp',
+        'org',
+        'as',
+    ],
+    axis=1
+)
 everything_better_df = everything_better_df.fillna('')
 categoricals = everything_better_df.select_dtypes(include=['object']).columns.tolist()
 everything_better_df[categoricals] = everything_better_df[categoricals].astype('category')
@@ -361,27 +385,29 @@ tsne_reduced_data = TSNE(n_components=2, n_jobs=WORKERS, random_state=RS).fit_tr
 tsne_2d_data = pd.DataFrame(tsne_reduced_data, columns=(['reduced feature 1', 'reduced feature 2']))
 
 # roughly without perplexity, where are the clusters?
-sns.scatterplot(data=tsne_2d_data, x='reduced feature 1', y='reduced feature 2')
 NAIVE_TSNE_PNG = os.path.join(IGNOREME_DIRPATH, 'k-means-cluster-naive.png')
-plt.tightlayout()
-plt.savefig(NAIVE_TSNE_PNG)
-plt.show()
+if not os.path.isfile(NAIVE_TSNE_PNG):
+    sns.scatterplot(data=tsne_2d_data, x='reduced feature 1', y='reduced feature 2')
+    plt.tight_layout()
+    plt.savefig(NAIVE_TSNE_PNG)
+    plt.show()
 
 # with perplexity, where are the clusters?
-perplexities = [5, 10, 20, 40, 50, 75, 100, 150]
-plt.figure(figsize=(20, 15))
-for i, perplexity in enumerate(perplexities):
-    tsne = TSNE(n_components=2, perplexity=perplexity, n_jobs=WORKERS, random_state=RS)
-    X_red = tsne.fit_transform(scaled_data)
-    red_data_df = pd.DataFrame(data=X_red, columns=['reduced feature 1', 'reduced feature 2'])  # creating a new dataframe with reduced dimensions
-    plt.subplot(2, 4, i + 1)
-    plt.title(f'perplexity={perplexity}')
-    sns.scatterplot(data=red_data_df, x='reduced feature 1', y='reduced feature 2')
-    plt.tight_layout(pad=2)
-
 PERPLEX_TSNE_PNG = os.path.join(IGNOREME_DIRPATH, 'k-means-cluster-perplex.png')
-plt.savefig(PERPLEX_TSNE_PNG)
-plt.show()
+if not os.path.isfile(PERPLEX_TSNE_PNG):
+    perplexities = [5, 10, 20, 40, 50, 75, 100, 150]
+    plt.figure(figsize=(20, 15))
+    for i, perplexity in enumerate(perplexities):
+        tsne = TSNE(n_components=2, perplexity=perplexity, n_jobs=WORKERS, random_state=RS)
+        X_red = tsne.fit_transform(scaled_data)
+        red_data_df = pd.DataFrame(data=X_red, columns=['reduced feature 1', 'reduced feature 2'])  # creating a new dataframe with reduced dimensions
+        plt.subplot(2, 4, i + 1)
+        plt.title(f'perplexity={perplexity}')
+        sns.scatterplot(data=red_data_df, x='reduced feature 1', y='reduced feature 2')
+        plt.tight_layout(pad=2)
+
+    plt.savefig(PERPLEX_TSNE_PNG)
+    plt.show()
 
 ############ K-MEANS BY SILHOUETTE
 
@@ -394,22 +420,22 @@ for i in range(2, 11):
     score = silhouette_score(scaled_data, model.labels_)
     scores.append(score)
 
+ELBOW_PNG = os.path.join(IGNOREME_DIRPATH, 'k-means-cluster-elbow.png')
 plt.plot(range(2, 11), scores, marker='o')
 plt.title('silhouette')
 plt.xlabel('k clusters')
 plt.ylabel('score')
 plt.xticks(range(2, 11))
 plt.grid(True)
-ELBOW_PNG = os.path.join(IGNOREME_DIRPATH, 'k-means-cluster-elbow.png')
 plt.savefig(ELBOW_PNG)
 plt.show()
 
-# looks like 5 clusters
-cluster_5 = KMeans(n_clusters=5, random_state=RS).fit(scaled_data)
+# looks like 3 clusters now
+cluster_model = KMeans(n_clusters=3, random_state=RS).fit(scaled_data)
 EVERYTHING_CLUSTER_CSV = os.path.join(IGNOREME_DIRPATH, 'everything+cluster.csv')
 everything_cluster_df = everything_better_df.copy()
 columns = everything_cluster_df.columns.tolist()
-everything_cluster_df['cluster'] = cluster_5.labels_
+everything_cluster_df['cluster'] = cluster_model.labels_
 everything_cluster_df.to_csv(EVERYTHING_CLUSTER_CSV, index=False)
 
 ############ DECISION TREE, THE KMEANS REALLY ISNT WORKING FOR ME
@@ -419,6 +445,7 @@ from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
+from imblearn.over_sampling import SMOTE
 
 X = everything_better_df_onehot.drop(['probably_human'], axis=1)
 y = everything_better_df_onehot['probably_human']
@@ -429,6 +456,7 @@ Ys = {'all': y, 'train': y_train, 'val': y_val, 'test': y_test}
 Xs = {'all': X, 'train': X_train, 'val': X_val, 'test': X_test}
 
 X_train_under, y_train_under = RandomUnderSampler(random_state=RS, sampling_strategy=0.6).fit_resample(X_train, y_train)
+X_train_over, y_train_over = SMOTE(random_state=RS, sampling_strategy=0.6, k_neighbors=5).fit_resample(X_train, y_train)
 
 search_parameters = {
     "n_estimators": [150, 200, 250],
@@ -443,21 +471,12 @@ rfc = RandomForestClassifier(random_state=RS)
 recall = metrics.make_scorer(metrics.recall_score)
 
 search_norm = RandomizedSearchCV(rfc, search_parameters, n_iter=150, scoring=recall, cv=5, n_jobs=WORKERS).fit(X_train, y_train)  # , verbose=2
-best_params_norm = search_norm.best_params_
-best_score_norm = search_norm.best_score_
-print('best_score_norm', best_score_norm, 'best_params_norm', best_params_norm)
-
 search_under = RandomizedSearchCV(rfc, search_parameters, n_iter=150, scoring=recall, cv=5, n_jobs=WORKERS).fit(X_train_under, y_train_under)  # , verbose=2
-best_params_under = search_under.best_params_
-best_score_under = search_under.best_score_
-print('best_score_under', best_score_under, 'best_params_under', best_params_under)
+search_over = RandomizedSearchCV(rfc, search_parameters, n_iter=150, scoring=recall, cv=5, n_jobs=WORKERS).fit(X_train_over, y_train_over)  # , verbose=2
 
-rfc_norm = RandomForestClassifier(**best_params_norm).fit(X_train, y_train)
-rfc_norm_score = metrics.recall_score(y_test, rfc_norm.predict(X_test))
-
-rfc_under = RandomForestClassifier(**best_params_under).fit(X_train_under, y_train_under)
-rfc_under_score = metrics.recall_score(y_test, rfc_under.predict(X_test))
-print('rfc_norm_score', rfc_norm_score, 'rfc_under_score', rfc_under_score)
+rfc_norm = RandomForestClassifier(**search_norm.best_params_).fit(X_train, y_train)
+rfc_under = RandomForestClassifier(**search_under.best_params_).fit(X_train_under, y_train_under)
+rfc_over = RandomForestClassifier(**search_over.best_params_).fit(X_train_over, y_train_over)
 
 
 def plot_important_features(model, greater_than=0.001):
@@ -476,4 +495,12 @@ def plot_important_features(model, greater_than=0.001):
     plt.show()
 
 
+plot_important_features(rfc_norm)
 plot_important_features(rfc_under)
+plot_important_features(rfc_over)
+
+rfc_norm_score = metrics.recall_score(y_test, rfc_norm.predict(X_test))
+rfc_under_score = metrics.recall_score(y_test, rfc_under.predict(X_test))
+rfc_over_score = metrics.recall_score(y_test, rfc_over.predict(X_test))
+print('norm best', search_norm.best_score_, 'under best', search_under.best_score_, 'over best', search_over.best_score_)
+print('rfc_norm_score', rfc_norm_score, 'rfc_under_score', rfc_under_score, 'rfc_over_score', rfc_over_score)
