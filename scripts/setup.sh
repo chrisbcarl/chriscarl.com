@@ -68,7 +68,7 @@ sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot  # put it on the path with a shortcut
 which certbot
 # sudo certbot --nginx  # self modify the nginx conf
-sudo certbot certonly --nginx  # generate certs to disk
+sudo certbot certonly --nginx  # generate certs to disk, careful, it is interactive.
 sudo ls -lah /etc/letsencrypt/live/chriscarl.com
 sudo certbot renew --dry-run  # setup renewal
 systemctl list-timers --all  # list out all cron jobs
