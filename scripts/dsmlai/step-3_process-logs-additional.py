@@ -1,7 +1,8 @@
 import os
-import re
+import sys
 import time
 import json
+import importlib
 
 import requests
 import pandas as pd
@@ -22,10 +23,22 @@ if not os.path.isdir(DSMLAI_CSVS_DIRPATH):
 
 ############ USE THE BASIC DATA TO DERIVE LOCATION, AGENT, ETC AND JOIN THEM
 
-CSV_ACCESS1 = os.path.join(DSMLAI_CSVS_DIRPATH, 'access1.csv')
-nginx_df = pd.read_csv(CSV_ACCESS1)
+if SCRIPT_DIRPATH not in sys.path:
+    sys.path.append(SCRIPT_DIRPATH)
+import constants
+
+importlib.reload(constants)
+
+CSV_NGINX = os.path.join(DSMLAI_CSVS_DIRPATH, 'nginx.csv')
+nginx_df = pd.read_csv(CSV_NGINX)
 nginx_df['time_local'] = pd.to_datetime(nginx_df['time_local'])
 ips = nginx_df['remote_addr'].unique().tolist()
+
+ip_vcs = nginx_df['remote_addr'].value_counts().sort_values(ascending=False)
+ip_vcs_df = pd.DataFrame({'ip': ip_vcs.index, 'count': ip_vcs.values})
+JSON_IPS = os.path.join(DSMLAI_CSVS_DIRPATH, 'ips.json')
+with open(JSON_IPS, 'w', encoding='utf-8') as w:
+    json.dump([dict(row) for _, row in ip_vcs_df.iterrows()], w, indent=2)
 
 ############ QUERY IP LOCATION DATA
 
@@ -48,6 +61,7 @@ IP_API_HEADERS = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0',
 }
 
+ips.remove('127.0.0.1')  # we re-add it later
 session = requests.Session()
 ip_dicts = []
 iterations = list(range(len(ips) // 100 + 1))
@@ -69,6 +83,7 @@ while iterations:
         ip_dicts.extend(body)
     time.sleep(3)
 
+# the usual demo.ip-api isnt helpful, this is "more" helpful
 localhost = {
     'status': 'success',
     'country': 'localhost',
@@ -86,8 +101,8 @@ localhost = {
     'query': '127.0.0.1'
 }
 ip_dicts.append(localhost)  # for fun
-ip_api_df = pd.DataFrame(ip_dicts)
 
+ip_api_df = pd.DataFrame(ip_dicts)
 CSV_IP_API = os.path.join(IGNOREME_DIRPATH, 'ip_api.csv')
 ip_api_df.to_csv(CSV_IP_API, index=False)
 
@@ -105,51 +120,17 @@ with open(CRAWLERS_TXT, 'w', encoding='utf-8') as w:
 
 ############ HTTP AGENTS
 
-user_agents = {}
-rows = []
-known_worthless = [
-    'https',
-    'compatible',
-    'Mini',  # opera mini
-    'Mobi',  # opera mobi
-    'Version',  # Version/4.0
-    'Hello',  # hello world stuff
-    'Hello,',  # hello world stuff
-]
-questionable = ['Edition', 'Mobi']
+importlib.reload(constants)
+agent_rows = []
 for user_agent in nginx_df['http_user_agent'].unique():
-    original_user_agent = user_agent
-    first = user_agent.split(' ')[0]
-    lst = [first.split('/')[0]]
-    user_agent = user_agent.replace(first, '')
-    user_agent = re.sub(r'g\(\d+\)', '', user_agent)  # moto g(7)
-    if 'Not(A:Brand' in user_agent:
-        lst.append('Not(A:Brand')
-        user_agent = user_agent.replace('Not(A:Brand', '')
-    # companies = re.findall(r'([\w-]+),', user_agent)
-    # if 'Expanse' in companies:
-    #     companies = ['Expanse']
-    parenthesis = re.findall(r'\(([\w-]+)', user_agent)
-    clients = re.findall(r' ([A-za-z\d-]+)\/v?[\d\/\.]+', user_agent)
-    lst += parenthesis + clients
-    for ele in known_worthless:
-        if ele in lst:
-            lst.remove(ele)
-    if lst == ['-']:  # no agent provided:
-        lst = [None]
-    row = dict(http_user_agent=original_user_agent, agents=lst)
-    if any(ele in lst for ele in questionable):
-        print('!!!!!!!', user_agent, lst)
-    # row.update({k: True for k in lst})
-    for k in lst:
-        if k not in user_agents:
-            user_agents[k] = 0
-        user_agents[k] += 1
-    rows.append(row)
+    row = constants.parse_user_agent(user_agent)
+    agent_rows.append(row)
 
-agent_df = pd.DataFrame(rows)
-cols = agent_df.columns.tolist()
-agent_df[cols[1:]] = agent_df[cols[1:]].fillna(False)
+print(list(sorted([str(ele) for ele in constants.USER_AGENTS])))
+
+agent_df = pd.DataFrame(agent_rows)
+# cols = agent_df.columns.tolist()
+# agent_df[cols[1:]] = agent_df[cols[1:]].fillna([None])
 # agent_df = agent_df.drop(['A', 'Brand'], axis=1)  # Not(A:Brand/24, happens when chromium is unbraneded https://github.com/WICG/ua-client-hints/issues/137
 
 CSV_AGENTS = os.path.join(DSMLAI_CSVS_DIRPATH, 'agents.csv')
@@ -157,4 +138,4 @@ agent_df.to_csv(CSV_AGENTS, index=False)
 
 JSON_AGENTS = os.path.join(DSMLAI_CSVS_DIRPATH, 'agents.json')
 with open(JSON_AGENTS, 'w', encoding='utf-8') as w:
-    json.dump(user_agents, w, indent=4)
+    json.dump(constants.USER_AGENTS, w, indent=4)

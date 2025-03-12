@@ -6,6 +6,11 @@
     - philosophically what do I need to do here:
         - i need a way to identify legitimate behavior over time, and the best way is to cluster, and I can from a bunch of data, mangle it and figure out other stuff and extract other features since its temporal
         - identify legimate behavior in-situ, and for that I need a fast model that can work with limited information, probably a tree, and rather than mangle any new data to fit what I'd clustered, I train just on annotated base data.
+    - ideas, remove my ip address from the equation, maybe add back in the ISP
+        - maybe rerun kmeans clustering ON THE ONE CLUSTER that had the probably humans
+        - undersample for the kmeans
+
+
 - github delivery action
     - cron job to pull and move, and if failed, send email?
     - cron job on launch, launch cmatrix to get some cpu action going
