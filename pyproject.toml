@@ -1,26 +1,92 @@
-[tool.poetry]
+[project]
 name = "chriscarl-com"
 version = "0.0.0"
 description = "Incredibly simple website that just gets the point across, but it DOES look cool."
-authors = ["Chris Carl <chrisbcarl@outlook.com>"]
-license = "MIT"
+authors = [{name = "Chris Carl", email = "chrisbcarl@outlook.com"}]
 readme = "README.md"
-packages = []  # {include = "chriscarl"}
-
-
-[tool.poetry.dependencies]
-python = ">=3.12,<4.0"
-pandas = "^2.2.3"
-selenium = "^4.29.0"
-flask = "^3.1.0"
-lxml = "^5.3.1"
-requests = "^2.32.3"
-seaborn = "^0.13.2"
-scikit-learn = "^1.6.1"
-imblearn = "^0.0"
-xgboost = "^2.1.4"
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python",
+    "Development Status :: 2 - Pre-Alpha",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+requires-python = ">=3.12,<3.14"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.chriscarl]
+codeword = 'narcissus'
+created = '2024-11-21 17:22:00'
+modified = '2024-11-21 17:22:00'
+
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__"
+]
+ignore = ["ignoreme"]
+stubPath = "dist/stubs"
+# defineConstant = { DEBUG = true }
+reportAttributeAccessIssue = false  # ._MEIPASS
+
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+addopts = [
+    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#test-discovery
+    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#which-import-mode
+    # allows you to have 2 test file names that are exaclty the same like a/test_lib.py and b/test_lib.py
+    "--import-mode=importlib",
+]
+
+
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/dist/typing"
+
+
+[[tool.mypy.overrides]]
+module = [
+    'parameterized',
+]
+ignore_missing_imports = true
+
+
+[tool.poetry]
+repository = "https://github.com/chrisbcarl/chriscarl.com"
+package-mode = false
+packages = [
+    # https://python-poetry.org/docs/pyproject/#packages
+    # {include = "chriscarl", from = "src"}
+]
+include = [
+    { path = "tests", format = "sdist" },
+    # it seems to include all files that are in the packages include section without the need to specify
+]
+
+
+[tool.poetry.urls]
+changelog = "https://github.com/chrisbcarl/chriscarl.com/blob/main/CHANGELOG.md"
+homepage = "https://chriscarl.com"
+# documentation = "https://readthedocs.org"
+# "bug tracker" = "https://github.com/me/spam/issues"
+
+
+[tool.poetry.scripts]
+# dev = 'chriscarl.tools.dev:main'
+
+
+# poetry add package
+[tool.poetry.dependencies]
+# chriscarl = {develop = true, path="../chriscarl.python"}  # version = ">0.0.0"
+
+
+[tool.poetry.group.dev.dependencies]  # poetry add package --group dev
+mypy = "^1.13.0"
